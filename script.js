@@ -24,10 +24,6 @@ body {
     margin-bottom: 20px;
 }
 
-.form-group {
-    margin-bottom: 15px;
-}
-
 input, select {
     width: 100%;
     padding: 8px;
@@ -53,36 +49,6 @@ button {
     background: #125ea7;
 }
 
-.btn-success {
-    background: #2e7d32;
-    color: white;
-}
-
-.btn-secondary {
-    background: #757575;
-    color: white;
-}
-
 .hidden {
     display: none;
-}
-
-.nav-tabs {
-    margin-bottom: 15px;
-}
-
-.tab-btn {
-    padding: 8px 15px;
-    margin-right: 5px;
-    background: #ddd;
-    border-radius: 5px;
-}
-
-.tab-btn.active {
-    background: #1976d2;
-    color: white;
-}
-
-.records-list {
-    margin-top: 15px;
 }
