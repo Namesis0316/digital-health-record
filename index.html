@@ -2,14 +2,115 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Digital Health Record</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kerala Migrant Worker Health Records</title>
+
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+    <!-- Link to CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <h1>Digital Health Record System</h1>
+<div class="container">
 
-    <script src="script.js"></script>
+    <!-- Header -->
+    <div class="header">
+        <h1>🏥 Kerala Migrant Health</h1>
+        <p>Digital Health Record Management System for Migrant Workers</p>
+    </div>
+
+    <!-- Registration Page -->
+    <div id="registrationPage" class="card">
+        <h2>DIGITAL HEALTH REGISTRATION</h2>
+
+        <form id="registrationForm">
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Age *</label>
+                <input type="number" id="age" min="18" max="100" required>
+            </div>
+
+            <div class="form-group">
+                <label>Blood Group *</label>
+                <select id="bloodGroup" required>
+                    <option value="">Select</option>
+                    <option>A+</option><option>A-</option>
+                    <option>B+</option><option>B-</option>
+                    <option>AB+</option><option>AB-</option>
+                    <option>O+</option><option>O-</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Phone *</label>
+                <input type="tel" id="phone" pattern="[0-9]{10}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Preferred Language *</label>
+                <select id="language" required>
+                    <option value="">Select</option>
+                    <option>Malayalam</option>
+                    <option>Hindi</option>
+                    <option>Tamil</option>
+                    <option>Telugu</option>
+                    <option>Bengali</option>
+                    <option>Kannada</option>
+                    <option>Odia</option>
+                    <option>English</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn">Register & Generate QR</button>
+        </form>
+
+        <div id="qrContainer" class="qr-container hidden">
+            <h3>Your Health ID QR Code</h3>
+            <div id="qrcode"></div>
+            <button id="goToDashboard" class="btn btn-success">Go to Dashboard</button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden">
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('patient')">👤 Patient</button>
+            <button class="tab-btn" onclick="showTab('doctor')">👨‍⚕️ Doctor</button>
+        </div>
+
+        <!-- Patient Dashboard Panel -->
+        <div id="patientTab" class="card">
+            <h3>My Health Records</h3>
+            <div id="patientInfo"></div>
+            <div id="patientRecords" class="records-list"></div>
+            <button class="btn btn-secondary" onclick="addPatientRecord()">Add Health Record</button>
+        </div>
+
+        <!-- Doctor Dashboard Panel -->
+        <div id="doctorTab" class="card hidden">
+            <h3>Doctor Dashboard</h3>
+
+            <div class="form-group">
+                <label>Enter Patient ID</label>
+                <input type="text" id="patientSearch" placeholder="KW123456">
+            </div>
+
+            <div id="doctorPatientInfo"></div>
+            <div id="doctorRecords" class="records-list"></div>
+            <button class="btn" onclick="addDoctorRecord()">Add Medical Record</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
-    
