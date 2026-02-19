@@ -1,119 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="./style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerala Migrant Worker Health Records</title>
-
-    <!-- QR Code Library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-
-    <!-- Link to CSS -->
+    <title>Digital Health Record - Kerala Migrant Workers</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
 
 <div class="container">
 
-    <!-- Header -->
-    <div class="header">
-        <h1>🏥 Kerala Migrant Health</h1>
-        <p>Digital Health Record Management System for Migrant Workers</p>
-    </div>
-
-    <!-- Registration Page -->
-    <div id="registrationPage" class="card">
-        <h2>DIGITAL HEALTH REGISTRATION</h2>
-
-        <form id="registrationForm">
-            <div class="form-group">
-                <label>Full Name *</label>
-                <input type="text" id="name" required>
+    <!-- ========== 1. LANDING PAGE (First) ========== -->
+    <div id="landingPage" class="page">
+        <div class="landing-card">
+            <h1>🏥 Digital Health Record System</h1>
+            <h2>for Migrant Workers of Kerala</h2>
+            <p class="problem-statement">
+                A centralized digital system to manage health records of migrant workers in Kerala—
+                enabling secure access for both doctors and patients across language barriers.
+            </p>
+            <div class="landing-buttons">
+                <button class="landing-btn doctor-btn" onclick="showPage('doctorLoginPage')">
+                    👨‍⚕️ Doctor Login
+                </button>
+                <button class="landing-btn patient-btn" onclick="showPage('patientGatePage')">
+                    👤 Patient Register / Login
+                </button>
             </div>
-
-            <div class="form-group">
-                <label>Age *</label>
-                <input type="number" id="age" min="18" max="100" required>
-            </div>
-
-            <div class="form-group">
-                <label>Blood Group *</label>
-                <select id="bloodGroup" required>
-                    <option value="">Select</option>
-                    <option>A+</option><option>A-</option>
-                    <option>B+</option><option>B-</option>
-                    <option>AB+</option><option>AB-</option>
-                    <option>O+</option><option>O-</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Phone *</label>
-                <input type="tel" id="phone" pattern="[0-9]{10}" required>
-            </div>
-
-            <div class="form-group">
-                <label>Preferred Language *</label>
-                <select id="language" required>
-                    <option value="">Select</option>
-                    <option>Malayalam</option>
-                    <option>Hindi</option>
-                    <option>Tamil</option>
-                    <option>Telugu</option>
-                    <option>Bengali</option>
-                    <option>Kannada</option>
-                    <option>Odia</option>
-                    <option>English</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn">Register & Generate QR</button>
-        </form>
-
-        <div id="qrContainer" class="qr-container hidden">
-            <h3>Your Health ID QR Code</h3>
-            <div id="qrcode"></div>
-            <button id="goToDashboard" class="btn btn-success">Go to Dashboard</button>
         </div>
     </div>
 
-    <!-- Dashboard -->
-    <div id="dashboard" class="hidden">
-
-        <div class="nav-tabs">
-            <button class="tab-btn active" onclick="showTab('patient')">👤 Patient</button>
-            <button class="tab-btn" onclick="showTab('doctor')">👨‍⚕️ Doctor</button>
+    <!-- ========== 2. DOCTOR LOGIN PAGE ========== -->
+    <div id="doctorLoginPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('landingPage')">← Back</button>
+        <div class="card">
+            <h2>👨‍⚕️ Doctor Login</h2>
+            <form id="doctorLoginForm">
+                <div class="form-group">
+                    <label>Doctor ID / Email *</label>
+                    <input type="text" id="doctorEmail" placeholder="doc@hospital.gov.in" required>
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" id="doctorPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
         </div>
+    </div>
 
-        <!-- Patient Dashboard Panel -->
-        <div id="patientTab" class="card">
-            <h3>My Health Records</h3>
-            <div id="patientInfo"></div>
-            <div id="patientRecords" class="records-list"></div>
-            <button class="btn btn-secondary" onclick="addPatientRecord()">Add Health Record</button>
-        </div>
-
-        <!-- Doctor Dashboard Panel -->
-        <div id="doctorTab" class="card hidden">
-            <h3>Doctor Dashboard</h3>
-
+    <!-- ========== 3. DOCTOR DASHBOARD (with demo elements + live tools) ========== -->
+    <div id="doctorDashboardPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('landingPage')">← Back</button>
+        <div class="card">
+            <h2>Doctor Dashboard</h2>
+            <p class="demo-hint">Click each card to see operation demo • Use live tools below to search & add records</p>
+            <div class="demo-grid">
+                <button class="demo-card" onclick="showDemoModal('doctor', 'viewData')">
+                    <span class="demo-icon">📋</span>
+                    <span>View Patient Data</span>
+                </button>
+                <button class="demo-card" onclick="showDemoModal('doctor', 'uploadData')">
+                    <span class="demo-icon">📤</span>
+                    <span>Upload Medical Record</span>
+                </button>
+                <button class="demo-card" onclick="showDemoModal('doctor', 'searchPatient')">
+                    <span class="demo-icon">🔍</span>
+                    <span>Search Patient</span>
+                </button>
+                <button class="demo-card" onclick="showDemoModal('doctor', 'prescribe')">
+                    <span class="demo-icon">💊</span>
+                    <span>Prescribe Medication</span>
+                </button>
+            </div>
+            <hr class="demo-divider">
+            <h4>Live: Search & Manage Records</h4>
             <div class="form-group">
                 <label>Enter Patient ID</label>
-                <input type="text" id="patientSearch" placeholder="KW123456">
+                <input type="text" id="doctorPatientSearch" placeholder="KW123456">
             </div>
-
-            <div id="doctorPatientInfo"></div>
+            <button class="btn btn-sm" onclick="loadDoctorPatientLive()">Search</button>
+            <div id="doctorPatientInfo" class="info-box-wrap"></div>
             <div id="doctorRecords" class="records-list"></div>
-            <button class="btn" onclick="addDoctorRecord()">Add Medical Record</button>
+            <button class="btn" onclick="addDoctorRecordLive()">Add Medical Record</button>
         </div>
+    </div>
 
+    <!-- ========== 4. PATIENT GATE (Register or Login) ========== -->
+    <div id="patientGatePage" class="page hidden">
+        <button class="back-btn" onclick="showPage('landingPage')">← Back</button>
+        <div class="card">
+            <h2>👤 Patient</h2>
+            <div class="gate-buttons">
+                <button class="btn btn-register" onclick="showPage('registrationPage')">Register</button>
+                <button class="btn btn-login" onclick="showPage('patientLoginPage')">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 5. PATIENT LOGIN PAGE ========== -->
+    <div id="patientLoginPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('patientGatePage')">← Back</button>
+        <div class="card">
+            <h2>Patient Login</h2>
+            <form id="patientLoginForm">
+                <div class="form-group">
+                    <label>Health ID *</label>
+                    <input type="text" id="loginHealthId" placeholder="KW123456" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone (last 4 digits) *</label>
+                    <input type="tel" id="loginPhone" placeholder="5678" pattern="[0-9]{4}" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== 6. PATIENT REGISTRATION (existing) ========== -->
+    <div id="registrationPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('patientGatePage')">← Back</button>
+        <div class="card">
+            <h2>DIGITAL HEALTH REGISTRATION</h2>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Age *</label>
+                    <input type="number" id="age" min="18" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Blood Group *</label>
+                    <select id="bloodGroup" required>
+                        <option value="">Select</option>
+                        <option>A+</option><option>A-</option>
+                        <option>B+</option><option>B-</option>
+                        <option>AB+</option><option>AB-</option>
+                        <option>O+</option><option>O-</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" id="phone" pattern="[0-9]{10}" required>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Language *</label>
+                    <select id="language" required>
+                        <option value="">Select</option>
+                        <option>Malayalam</option>
+                        <option>Hindi</option>
+                        <option>Tamil</option>
+                        <option>Telugu</option>
+                        <option>Bengali</option>
+                        <option>Kannada</option>
+                        <option>Odia</option>
+                        <option>English</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Register & Generate QR</button>
+            </form>
+            <div id="qrContainer" class="qr-container hidden">
+                <h3>Your Health ID QR Code</h3>
+                <div id="qrcode"></div>
+                <button id="goToDashboard" class="btn btn-success">Go to Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 7. PATIENT DASHBOARD (with demo elements) ========== -->
+    <div id="patientDashboardPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('patientGatePage')">← Back</button>
+        <div class="card">
+            <h3>My Health Records</h3>
+            <p class="demo-hint">Click each element to see the operation demo</p>
+            <div id="patientInfo"></div>
+            <div id="patientRecords" class="records-list"></div>
+            <div class="demo-grid">
+                <button class="demo-card" onclick="showDemoModal('patient', 'viewData')">
+                    <span class="demo-icon">📋</span>
+                    <span>View My Data</span>
+                </button>
+                <button class="demo-card" onclick="showDemoModal('patient', 'uploadData')">
+                    <span class="demo-icon">📤</span>
+                    <span>Upload Document</span>
+                </button>
+                <button class="btn btn-secondary" onclick="addPatientRecord()">Add Health Record</button>
+            </div>
+        </div>
     </div>
 
 </div>
 
-<script src="./script.js"></script>
+<!-- ========== DEMO MODAL (screenshot-style overlay) ========== -->
+<div id="demoModal" class="demo-modal hidden">
+    <div class="demo-modal-content">
+        <button class="demo-close" onclick="closeDemoModal()">×</button>
+        <div id="demoModalBody"></div>
+        <p class="demo-caption" id="demoModalCaption">Operation demo</p>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
-
-
