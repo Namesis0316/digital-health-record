@@ -1,257 +1,389 @@
-const STORAGE_PATIENTS = 'kerala_health_patients';
-const STORAGE_RECORDS = 'kerala_health_records';
-const CURRENT_PATIENT_ID = 'kerala_health_current_patient';
-
-function getPatients() {
-  return JSON.parse(localStorage.getItem(STORAGE_PATIENTS) || '{}');
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #0f3460 0%, #16213e 50%, #1a1a2e 100%);
+    color: #333;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
 }
 
-function getRecords() {
-  return JSON.parse(localStorage.getItem(STORAGE_RECORDS) || '{}');
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 20px;
 }
 
-function getCurrentPatientId() {
-  return localStorage.getItem(CURRENT_PATIENT_ID);
+/* Pages */
+.page {
+    animation: fadeIn 0.3s ease;
 }
 
-function setCurrentPatientId(id) {
-  localStorage.setItem(CURRENT_PATIENT_ID, id);
+.page.hidden {
+    display: none !important;
 }
 
-function generateHealthId() {
-  const patients = getPatients();
-  let id;
-  do {
-    id = 'KW' + String(Math.floor(100000 + Math.random() * 900000));
-  } while (patients[id]);
-  return id;
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-document.getElementById('registrationForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const name = document.getElementById('name').value.trim();
-  const age = document.getElementById('age').value;
-  const bloodGroup = document.getElementById('bloodGroup').value;
-  const phone = document.getElementById('phone').value.trim();
-  const language = document.getElementById('language').value;
-
-  const patientId = generateHealthId();
-  const patients = getPatients();
-  patients[patientId] = {
-    name,
-    age: parseInt(age),
-    bloodGroup,
-    phone,
-    language,
-    registeredAt: new Date().toISOString()
-  };
-  localStorage.setItem(STORAGE_PATIENTS, JSON.stringify(patients));
-
-  // Initialize empty records for this patient
-  const records = getRecords();
-  records[patientId] = records[patientId] || [];
-  localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
-
-  setCurrentPatientId(patientId);
-
-  const qrContainer = document.getElementById('qrContainer');
-  const qrcodeEl = document.getElementById('qrcode');
-  qrcodeEl.innerHTML = '';
-
-  if (typeof QRCode !== 'undefined') {
-    new QRCode(qrcodeEl, {
-      text: patientId,
-      width: 200,
-      height: 200
-    });
-  } else {
-    qrcodeEl.innerHTML = `<p style="font-size:24px; font-weight:bold;">${patientId}</p><p>QR library not loaded</p>`;
-  }
-
-  document.querySelector('#qrContainer h3').textContent = `Your Health ID: ${patientId}`;
-  qrContainer.classList.remove('hidden');
-  document.querySelector('form#registrationForm').classList.add('hidden');
-});
-
-document.getElementById('goToDashboard').addEventListener('click', function () {
-  document.getElementById('registrationPage').classList.add('hidden');
-  document.getElementById('dashboard').classList.remove('hidden');
-  showTab('patient');
-  renderPatientDashboard();
-});
-
-function showTab(tab) {
-  const patientTab = document.getElementById('patientTab');
-  const doctorTab = document.getElementById('doctorTab');
-  const buttons = document.querySelectorAll('.tab-btn');
-
-  buttons.forEach(btn => btn.classList.remove('active'));
-  document.querySelector(`.tab-btn[onclick="showTab('${tab}')"]`).classList.add('active');
-
-  if (tab === 'patient') {
-    patientTab.classList.remove('hidden');
-    doctorTab.classList.add('hidden');
-    renderPatientDashboard();
-  } else {
-    patientTab.classList.remove('hidden');
-    doctorTab.classList.add('hidden');
-    patientTab.classList.add('hidden');
-    doctorTab.classList.remove('hidden');
-    loadDoctorPatient();
-  }
+/* Landing Page */
+.landing-card {
+    background: white;
+    padding: 48px 40px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
 }
 
-function renderPatientDashboard() {
-  const patientId = getCurrentPatientId();
-  if (!patientId) {
-    document.getElementById('patientInfo').innerHTML = '<p>No patient logged in. Please register first.</p>';
-    document.getElementById('patientRecords').innerHTML = '';
-    return;
-  }
-
-  const patients = getPatients();
-  const patient = patients[patientId];
-  if (!patient) {
-    document.getElementById('patientInfo').innerHTML = '<p>Patient data not found.</p>';
-    return;
-  }
-
-  document.getElementById('patientInfo').innerHTML = `
-    <div class="info-box">
-      <p><strong>Health ID:</strong> ${patientId}</p>
-      <p><strong>Name:</strong> ${patient.name}</p>
-      <p><strong>Age:</strong> ${patient.age}</p>
-      <p><strong>Blood Group:</strong> ${patient.bloodGroup}</p>
-      <p><strong>Phone:</strong> ${patient.phone}</p>
-    </div>
-  `;
-
-  renderRecordsList(document.getElementById('patientRecords'), patientId);
+.proto-badge {
+    display: inline-block;
+    background: #ff6b35;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
 }
 
-function addPatientRecord() {
-  const patientId = getCurrentPatientId();
-  if (!patientId) {
-    alert('Please register first.');
-    return;
-  }
-
-  const date = prompt('Date of visit (YYYY-MM-DD):', new Date().toISOString().slice(0, 10));
-  if (!date) return;
-  const description = prompt('Brief description of the visit:') || 'N/A';
-  const diagnosis = prompt('Diagnosis (if any):') || 'N/A';
-
-  const records = getRecords();
-  records[patientId] = records[patientId] || [];
-  records[patientId].unshift({
-    date,
-    description,
-    diagnosis,
-    addedBy: 'self',
-    addedAt: new Date().toISOString()
-  });
-  localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
-
-  renderPatientDashboard();
+.landing-card h1 {
+    font-size: 2rem;
+    color: #0f3460;
+    margin: 0 0 8px 0;
 }
 
-function loadDoctorPatient() {
-  const searchInput = document.getElementById('patientSearch');
-  const patientId = searchInput.value.trim().toUpperCase() || getCurrentPatientId();
-
-  if (!patientId) {
-    document.getElementById('doctorPatientInfo').innerHTML = '<p>Enter a Patient ID to view records.</p>';
-    document.getElementById('doctorRecords').innerHTML = '';
-    return;
-  }
-
-  const patients = getPatients();
-  const patient = patients[patientId];
-
-  if (!patient) {
-    document.getElementById('doctorPatientInfo').innerHTML = `<p>No patient found with ID: ${patientId}</p>`;
-    document.getElementById('doctorRecords').innerHTML = '';
-    return;
-  }
-
-  document.getElementById('doctorPatientInfo').innerHTML = `
-    <div class="info-box">
-      <p><strong>Health ID:</strong> ${patientId}</p>
-      <p><strong>Name:</strong> ${patient.name}</p>
-      <p><strong>Age:</strong> ${patient.age} | <strong>Blood Group:</strong> ${patient.bloodGroup}</p>
-      <p><strong>Phone:</strong> ${patient.phone}</p>
-    </div>
-  `;
-
-  renderRecordsList(document.getElementById('doctorRecords'), patientId, true);
+.landing-card h2 {
+    font-size: 1.2rem;
+    color: #666;
+    font-weight: 500;
+    margin: 0 0 24px 0;
 }
 
-document.getElementById('patientSearch').addEventListener('keypress', function (e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    loadDoctorPatient();
-  }
-});
-document.getElementById('patientSearch').addEventListener('blur', loadDoctorPatient);
-
-function addDoctorRecord() {
-  const patientId = document.getElementById('patientSearch').value.trim().toUpperCase();
-  if (!patientId) {
-    alert('Enter Patient ID first.');
-    return;
-  }
-
-  const patients = getPatients();
-  if (!patients[patientId]) {
-    alert('Patient not found. Please search for a valid Patient ID.');
-    return;
-  }
-
-  const date = prompt('Date of visit (YYYY-MM-DD):', new Date().toISOString().slice(0, 10));
-  if (!date) return;
-  const description = prompt('Visit notes / symptoms:') || 'N/A';
-  const diagnosis = prompt('Diagnosis:') || 'N/A';
-  const prescription = prompt('Prescription / medication:') || 'N/A';
-  const doctorName = prompt('Doctor name:') || 'Doctor';
-
-  const records = getRecords();
-  records[patientId] = records[patientId] || [];
-  records[patientId].unshift({
-    date,
-    description,
-    diagnosis,
-    prescription,
-    doctorName,
-    addedBy: 'doctor',
-    addedAt: new Date().toISOString()
-  });
-  localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
-
-  loadDoctorPatient();
+.problem-statement {
+    max-width: 560px;
+    margin: 0 auto 36px;
+    line-height: 1.6;
+    color: #555;
+    font-size: 1rem;
 }
 
-function renderRecordsList(container, patientId, isDoctorView = false) {
-  const records = getRecords()[patientId] || [];
-
-  if (records.length === 0) {
-    container.innerHTML = '<p>No health records yet.</p>';
-    return;
-  }
-
-  container.innerHTML = records.map(r => {
-    let html = `
-      <div class="record-item">
-        <p><strong>${r.date}</strong> ${r.addedBy === 'doctor' ? '— ' + (r.doctorName || 'Doctor') : '(self)'}</p>
-        <p>${r.description}</p>
-        <p><strong>Diagnosis:</strong> ${r.diagnosis}</p>
-    `;
-    if (isDoctorView && r.prescription) {
-      html += `<p><strong>Prescription:</strong> ${r.prescription}</p>`;
-    }
-    html += '</div>';
-    return html;
-  }).join('');
+.landing-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
+.landing-btn {
+    padding: 18px 36px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-width: 200px;
+}
 
+.landing-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.doctor-btn {
+    background: #1976d2;
+    color: white;
+}
+
+.patient-btn {
+    background: #2e7d32;
+    color: white;
+}
+
+/* Back Button */
+.back-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.4);
+    cursor: pointer;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.back-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Cards */
+.card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    margin-bottom: 20px;
+}
+
+.card h2, .card h3, .card h4 {
+    margin-top: 0;
+    color: #0f3460;
+}
+
+/* Demo elements */
+.demo-hint {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.demo-card {
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.demo-card:hover {
+    border-color: #1976d2;
+    background: #e3f2fd;
+    transform: translateY(-2px);
+}
+
+.demo-icon {
+    font-size: 2rem;
+}
+
+.demo-divider {
+    border: none;
+    border-top: 2px solid #eee;
+    margin: 28px 0;
+}
+
+/* Gate (Register / Login choice) */
+.gate-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.btn-register {
+    background: #2e7d32;
+    color: white;
+}
+
+.btn-login {
+    background: #1976d2;
+    color: white;
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #444;
+}
+
+input, select {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn {
+    background: #1976d2;
+    color: white;
+}
+
+.btn:hover {
+    background: #125ea7;
+}
+
+.btn-secondary {
+    background: #5c6bc0;
+}
+
+.btn-secondary:hover {
+    background: #3f51b5;
+}
+
+.btn-success {
+    background: #2e7d32;
+}
+
+.btn-success:hover {
+    background: #1b5e20;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 14px;
+    margin-left: 8px;
+}
+
+/* Demo Modal (screenshot overlay) */
+.demo-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.demo-modal.hidden {
+    display: none !important;
+}
+
+.demo-modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+}
+
+.demo-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #e0e0e0;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+
+.demo-close:hover {
+    background: #bdbdbd;
+}
+
+.demo-screenshot {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    margin: 40px 24px 12px;
+    overflow: hidden;
+}
+
+.demo-screen-header {
+    background: #1976d2;
+    color: white;
+    padding: 12px 16px;
+    font-weight: 600;
+}
+
+.demo-screen-body {
+    padding: 20px;
+    background: #fafafa;
+}
+
+.demo-screen-body p, .demo-screen-body ul {
+    margin: 8px 0;
+}
+
+.demo-caption {
+    font-size: 13px;
+    color: #666;
+    padding: 12px 24px 24px;
+    margin: 0;
+}
+
+/* Info box */
+.info-box {
+    background: #f5f5f5;
+    border-left: 4px solid #1976d2;
+    padding: 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+}
+
+.info-box p {
+    margin: 6px 0;
+}
+
+.info-box-wrap {
+    margin: 16px 0;
+}
+
+/* Records list */
+.records-list {
+    margin: 20px 0;
+}
+
+.record-item {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.record-item p {
+    margin: 6px 0;
+}
+
+/* QR Container */
+.qr-container {
+    text-align: center;
+    padding: 24px;
+    margin-top: 20px;
+}
+
+.qr-container.hidden {
+    display: none !important;
+}
+
+#qrcode {
+    display: inline-block;
+    margin: 16px 0;
+}
+
+#qrcode img {
+    border-radius: 8px;
+}
+
+.hidden {
+    display: none !important;
+}
