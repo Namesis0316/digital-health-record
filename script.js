@@ -1,389 +1,402 @@
-body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: linear-gradient(135deg, #0f3460 0%, #16213e 50%, #1a1a2e 100%);
-    color: #333;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
+// ============================================
+// Kerala Migrant Worker Health Records - Logic
+// Hackathon Prototype: Digital Health Record for Migrant Workers
+// ============================================
+
+const STORAGE_PATIENTS = 'kerala_health_patients';
+const STORAGE_RECORDS = 'kerala_health_records';
+const CURRENT_PATIENT_ID = 'kerala_health_current_patient';
+
+// ----------- Page Navigation -----------
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  const page = document.getElementById(pageId);
+  if (page) page.classList.remove('hidden');
+
+  if (pageId === 'patientDashboardPage') renderPatientDashboard();
+  if (pageId === 'doctorDashboardPage') loadDoctorPatientLive();
 }
 
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 30px 20px;
+// Get stored data
+function getPatients() {
+  return JSON.parse(localStorage.getItem(STORAGE_PATIENTS) || '{}');
 }
 
-/* Pages */
-.page {
-    animation: fadeIn 0.3s ease;
+function getRecords() {
+  return JSON.parse(localStorage.getItem(STORAGE_RECORDS) || '{}');
 }
 
-.page.hidden {
-    display: none !important;
+function getCurrentPatientId() {
+  return localStorage.getItem(CURRENT_PATIENT_ID);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+function setCurrentPatientId(id) {
+  localStorage.setItem(CURRENT_PATIENT_ID, id);
 }
 
-/* Landing Page */
-.landing-card {
-    background: white;
-    padding: 48px 40px;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    text-align: center;
+// Generate unique Health ID (KW + 6 digits)
+function generateHealthId() {
+  const patients = getPatients();
+  let id;
+  do {
+    id = 'KW' + String(Math.floor(100000 + Math.random() * 900000));
+  } while (patients[id]);
+  return id;
 }
 
-.proto-badge {
-    display: inline-block;
-    background: #ff6b35;
-    color: white;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 24px;
+// ----------- Doctor Login -----------
+document.getElementById('doctorLoginForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  showPage('doctorDashboardPage');
+});
+
+// ----------- Patient Login -----------
+document.getElementById('patientLoginForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const healthId = document.getElementById('loginHealthId').value.trim().toUpperCase();
+  const phoneSuffix = document.getElementById('loginPhone').value.trim();
+  const patients = getPatients();
+  const patient = patients[healthId];
+  if (!patient) {
+    alert('Health ID not found. Please register first.');
+    return;
+  }
+  if (!patient.phone.endsWith(phoneSuffix)) {
+    alert('Invalid credentials.');
+    return;
+  }
+  setCurrentPatientId(healthId);
+  showPage('patientDashboardPage');
+});
+
+// ----------- Registration -----------
+document.getElementById('registrationForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value.trim();
+  const age = document.getElementById('age').value;
+  const bloodGroup = document.getElementById('bloodGroup').value;
+  const phone = document.getElementById('phone').value.trim();
+  const language = document.getElementById('language').value;
+
+  const patientId = generateHealthId();
+  const patients = getPatients();
+  patients[patientId] = {
+    name,
+    age: parseInt(age),
+    bloodGroup,
+    phone,
+    language,
+    registeredAt: new Date().toISOString()
+  };
+  localStorage.setItem(STORAGE_PATIENTS, JSON.stringify(patients));
+
+  const records = getRecords();
+  records[patientId] = records[patientId] || [];
+  localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
+
+  setCurrentPatientId(patientId);
+
+  const qrContainer = document.getElementById('qrContainer');
+  const qrcodeEl = document.getElementById('qrcode');
+  qrcodeEl.innerHTML = '';
+
+  if (typeof QRCode !== 'undefined') {
+    try {
+      new QRCode(qrcodeEl, { text: patientId, width: 200, height: 200 });
+    } catch (err) {
+      qrcodeEl.innerHTML = `<p style="font-size:24px; font-weight:bold;">${patientId}</p>`;
+    }
+  } else {
+    qrcodeEl.innerHTML = `<p style="font-size:24px; font-weight:bold;">${patientId}</p>`;
+  }
+
+  document.querySelector('#qrContainer h3').textContent = `Your Health ID: ${patientId}`;
+  qrContainer.classList.remove('hidden');
+  document.querySelector('form#registrationForm').classList.add('hidden');
+});
+
+// Go to Dashboard (after registration)
+document.getElementById('goToDashboard').addEventListener('click', function () {
+  showPage('patientDashboardPage');
+});
+
+// ----------- Demo Modals (screenshot-style overlays) -----------
+const DEMO_CONTENT = {
+  doctor: {
+    viewData: {
+      title: 'View Patient Data',
+      html: `
+        <div class="demo-screenshot">
+          <div class="demo-screen-header">Patient Health Profile</div>
+          <div class="demo-screen-body">
+            <p><strong>Health ID:</strong> KW123456</p>
+            <p><strong>Name:</strong> Rajesh Kumar</p>
+            <p><strong>Age:</strong> 32 | <strong>Blood:</strong> O+</p>
+            <p><strong>Language:</strong> Hindi</p>
+            <hr>
+            <p><strong>Recent Records:</strong></p>
+            <ul><li>2025-02-15: Fever, prescribed Paracetamol</li>
+            <li>2025-01-20: Follow-up checkup</li></ul>
+          </div>
+        </div>`,
+      caption: 'Doctor views patient demographics and full medical history'
+    },
+    uploadData: {
+      title: 'Upload Medical Record',
+      html: `
+        <div class="demo-screenshot">
+          <div class="demo-screen-header">Add Medical Record</div>
+          <div class="demo-screen-body">
+            <p>Patient ID: KW123456</p>
+            <p>Date: 2025-02-20</p>
+            <p>Notes: [Visit notes...]</p>
+            <p>Diagnosis: [Diagnosis...]</p>
+            <p>Prescription: [Medication...]</p>
+            <p><button class="btn">Save Record</button></p>
+          </div>
+        </div>`,
+      caption: 'Doctor uploads visit notes, diagnosis, and prescription'
+    },
+    searchPatient: {
+      title: 'Search Patient',
+      html: `
+        <div class="demo-screenshot">
+          <div class="demo-screen-header">Search by Health ID / QR</div>
+          <div class="demo-screen-body">
+            <p>Enter Health ID: [KW______]</p>
+            <p>Or scan QR code from patient's phone/card</p>
+            <button class="btn">Search</button>
+          </div>
+        </div>`,
+      caption: 'Search patient by Health ID or scan their QR code'
+    },
+    prescribe: {
+      title: 'Prescribe Medication',
+      html: `
+        <div class="demo-screenshot">
+          <div class="demo-screen-header">Prescription</div>
+          <div class="demo-screen-body">
+            <p>Paracetamol 500mg - 1-0-1 for 5 days</p>
+            <p>ORS sachets - as needed</p>
+            <p>Advice: Rest, fluids</p>
+          </div>
+        </div>`,
+      caption: 'Doctor writes prescription linked to patient record'
+    }
+  },
+  patient: {
+    viewData: {
+      title: 'View My Data',
+      html: `
+        <div class="demo-screenshot">
+          <div class="demo-screen-header">My Health Records</div>
+          <div class="demo-screen-body">
+            <p><strong>Health ID:</strong> KW123456</p>
+            <p>Your records are accessible in your preferred language.</p>
+            <p><strong>Recent:</strong></p>
+            <ul><li>2025-02-15: Fever - Paracetamol</li></ul>
+          </div>
+        </div>`,
+      caption: 'Patient views their own health records anytime'
+    },
+    uploadData: {
+      title: 'Upload Document',
+      html: `
+        <div class="demo-screenshot">
+          <div class="demo-screen-header">Upload Document</div>
+          <div class="demo-screen-body">
+            <p>Upload: Lab report / Prescription / X-ray</p>
+            <p>[Choose file] [Upload]</p>
+          </div>
+        </div>`,
+      caption: 'Patient uploads lab reports or prescriptions'
+    }
+  }
+};
+
+function showDemoModal(role, operation) {
+  const data = DEMO_CONTENT[role]?.[operation];
+  if (!data) return;
+  const modal = document.getElementById('demoModal');
+  document.getElementById('demoModalBody').innerHTML = data.html;
+  document.getElementById('demoModalCaption').textContent = data.caption;
+  modal.classList.remove('hidden');
 }
 
-.landing-card h1 {
-    font-size: 2rem;
-    color: #0f3460;
-    margin: 0 0 8px 0;
+function closeDemoModal() {
+  document.getElementById('demoModal').classList.add('hidden');
 }
 
-.landing-card h2 {
-    font-size: 1.2rem;
-    color: #666;
-    font-weight: 500;
-    margin: 0 0 24px 0;
+document.getElementById('demoModal').addEventListener('click', function (e) {
+  if (e.target === this) closeDemoModal();
+});
+
+// ----------- Patient Dashboard -----------
+function renderPatientDashboard() {
+  const patientInfoEl = document.getElementById('patientInfo');
+  const patientRecordsEl = document.getElementById('patientRecords');
+  if (!patientInfoEl) return;
+
+  const patientId = getCurrentPatientId();
+  if (!patientId) {
+    patientInfoEl.innerHTML = '<p>No patient logged in. Please register or login.</p>';
+    if (patientRecordsEl) patientRecordsEl.innerHTML = '';
+    return;
+  }
+
+  const patients = getPatients();
+  const patient = patients[patientId];
+  if (!patient) {
+    patientInfoEl.innerHTML = '<p>Patient data not found.</p>';
+    return;
+  }
+
+  patientInfoEl.innerHTML = `
+    <div class="info-box">
+      <p><strong>Health ID:</strong> ${patientId}</p>
+      <p><strong>Name:</strong> ${patient.name}</p>
+      <p><strong>Age:</strong> ${patient.age} | <strong>Blood Group:</strong> ${patient.bloodGroup}</p>
+      <p><strong>Phone:</strong> ${patient.phone}</p>
+    </div>
+  `;
+
+  if (patientRecordsEl) renderRecordsList(patientRecordsEl, patientId);
 }
 
-.problem-statement {
-    max-width: 560px;
-    margin: 0 auto 36px;
-    line-height: 1.6;
-    color: #555;
-    font-size: 1rem;
+function addPatientRecord() {
+  const patientId = getCurrentPatientId();
+  if (!patientId) {
+    alert('Please register or login first.');
+    return;
+  }
+
+  const date = prompt('Date of visit (YYYY-MM-DD):', new Date().toISOString().slice(0, 10));
+  if (!date) return;
+  const description = prompt('Brief description of the visit:') || 'N/A';
+  const diagnosis = prompt('Diagnosis (if any):') || 'N/A';
+
+  const records = getRecords();
+  records[patientId] = records[patientId] || [];
+  records[patientId].unshift({
+    date,
+    description,
+    diagnosis,
+    addedBy: 'self',
+    addedAt: new Date().toISOString()
+  });
+  localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
+
+  renderPatientDashboard();
 }
 
-.landing-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
+// ----------- Doctor Dashboard (Live) -----------
+function loadDoctorPatientLive() {
+  const el = document.getElementById('doctorPatientSearch');
+  const patientId = (el && el.value.trim().toUpperCase()) || '';
+
+  const infoEl = document.getElementById('doctorPatientInfo');
+  const recordsEl = document.getElementById('doctorRecords');
+  if (!infoEl) return;
+
+  if (!patientId) {
+    infoEl.innerHTML = '<p>Enter a Patient ID and click Search.</p>';
+    if (recordsEl) recordsEl.innerHTML = '';
+    return;
+  }
+
+  const patients = getPatients();
+  const patient = patients[patientId];
+
+  if (!patient) {
+    infoEl.innerHTML = `<p>No patient found with ID: ${patientId}</p>`;
+    if (recordsEl) recordsEl.innerHTML = '';
+    return;
+  }
+
+  infoEl.innerHTML = `
+    <div class="info-box">
+      <p><strong>Health ID:</strong> ${patientId}</p>
+      <p><strong>Name:</strong> ${patient.name}</p>
+      <p><strong>Age:</strong> ${patient.age} | <strong>Blood Group:</strong> ${patient.bloodGroup}</p>
+      <p><strong>Phone:</strong> ${patient.phone}</p>
+    </div>
+  `;
+
+  if (recordsEl) renderRecordsList(recordsEl, patientId, true);
 }
 
-.landing-btn {
-    padding: 18px 36px;
-    font-size: 1.1rem;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: transform 0.2s, box-shadow 0.2s;
-    min-width: 200px;
+function addDoctorRecordLive() {
+  const el = document.getElementById('doctorPatientSearch');
+  const patientId = el ? el.value.trim().toUpperCase() : '';
+
+  if (!patientId) {
+    alert('Enter Patient ID and Search first.');
+    return;
+  }
+
+  const patients = getPatients();
+  if (!patients[patientId]) {
+    alert('Patient not found. Please search for a valid Patient ID.');
+    return;
+  }
+
+  const date = prompt('Date of visit (YYYY-MM-DD):', new Date().toISOString().slice(0, 10));
+  if (!date) return;
+  const description = prompt('Visit notes / symptoms:') || 'N/A';
+  const diagnosis = prompt('Diagnosis:') || 'N/A';
+  const prescription = prompt('Prescription / medication:') || 'N/A';
+  const doctorName = prompt('Doctor name:') || 'Doctor';
+
+  const records = getRecords();
+  records[patientId] = records[patientId] || [];
+  records[patientId].unshift({
+    date,
+    description,
+    diagnosis,
+    prescription,
+    doctorName,
+    addedBy: 'doctor',
+    addedAt: new Date().toISOString()
+  });
+  localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
+
+  loadDoctorPatientLive();
 }
 
-.landing-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-}
+document.addEventListener('DOMContentLoaded', function () {
+  const searchEl = document.getElementById('doctorPatientSearch');
+  if (searchEl) {
+    searchEl.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        loadDoctorPatientLive();
+      }
+    });
+  }
+});
 
-.doctor-btn {
-    background: #1976d2;
-    color: white;
-}
+// ----------- Render Records List -----------
+function renderRecordsList(container, patientId, isDoctorView = false) {
+  if (!container) return;
+  const records = getRecords()[patientId] || [];
 
-.patient-btn {
-    background: #2e7d32;
-    color: white;
-}
+  if (records.length === 0) {
+    container.innerHTML = '<p>No health records yet.</p>';
+    return;
+  }
 
-/* Back Button */
-.back-btn {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.4);
-    cursor: pointer;
-    margin-bottom: 20px;
-    font-size: 14px;
-}
-
-.back-btn:hover {
-    background: rgba(255,255,255,0.3);
-}
-
-/* Cards */
-.card {
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    margin-bottom: 20px;
-}
-
-.card h2, .card h3, .card h4 {
-    margin-top: 0;
-    color: #0f3460;
-}
-
-/* Demo elements */
-.demo-hint {
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 20px;
-}
-
-.demo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
-    margin: 20px 0;
-}
-
-.demo-card {
-    background: #f8f9fa;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 20px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.2s;
-    font-weight: 500;
-}
-
-.demo-card:hover {
-    border-color: #1976d2;
-    background: #e3f2fd;
-    transform: translateY(-2px);
-}
-
-.demo-icon {
-    font-size: 2rem;
-}
-
-.demo-divider {
-    border: none;
-    border-top: 2px solid #eee;
-    margin: 28px 0;
-}
-
-/* Gate (Register / Login choice) */
-.gate-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-top: 24px;
-}
-
-.btn-register {
-    background: #2e7d32;
-    color: white;
-}
-
-.btn-login {
-    background: #1976d2;
-    color: white;
-}
-
-/* Form */
-.form-group {
-    margin-bottom: 18px;
-}
-
-.form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: #444;
-}
-
-input, select {
-    width: 100%;
-    max-width: 400px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 15px;
-}
-
-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn {
-    background: #1976d2;
-    color: white;
-}
-
-.btn:hover {
-    background: #125ea7;
-}
-
-.btn-secondary {
-    background: #5c6bc0;
-}
-
-.btn-secondary:hover {
-    background: #3f51b5;
-}
-
-.btn-success {
-    background: #2e7d32;
-}
-
-.btn-success:hover {
-    background: #1b5e20;
-}
-
-.btn-sm {
-    padding: 8px 16px;
-    font-size: 14px;
-    margin-left: 8px;
-}
-
-/* Demo Modal (screenshot overlay) */
-.demo-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 20px;
-}
-
-.demo-modal.hidden {
-    display: none !important;
-}
-
-.demo-modal-content {
-    background: white;
-    border-radius: 12px;
-    max-width: 500px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 24px 48px rgba(0,0,0,0.4);
-}
-
-.demo-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: none;
-    background: #e0e0e0;
-    font-size: 24px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
-}
-
-.demo-close:hover {
-    background: #bdbdbd;
-}
-
-.demo-screenshot {
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    margin: 40px 24px 12px;
-    overflow: hidden;
-}
-
-.demo-screen-header {
-    background: #1976d2;
-    color: white;
-    padding: 12px 16px;
-    font-weight: 600;
-}
-
-.demo-screen-body {
-    padding: 20px;
-    background: #fafafa;
-}
-
-.demo-screen-body p, .demo-screen-body ul {
-    margin: 8px 0;
-}
-
-.demo-caption {
-    font-size: 13px;
-    color: #666;
-    padding: 12px 24px 24px;
-    margin: 0;
-}
-
-/* Info box */
-.info-box {
-    background: #f5f5f5;
-    border-left: 4px solid #1976d2;
-    padding: 16px;
-    border-radius: 0 8px 8px 0;
-    margin: 16px 0;
-}
-
-.info-box p {
-    margin: 6px 0;
-}
-
-.info-box-wrap {
-    margin: 16px 0;
-}
-
-/* Records list */
-.records-list {
-    margin: 20px 0;
-}
-
-.record-item {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 14px;
-    margin-bottom: 12px;
-}
-
-.record-item p {
-    margin: 6px 0;
-}
-
-/* QR Container */
-.qr-container {
-    text-align: center;
-    padding: 24px;
-    margin-top: 20px;
-}
-
-.qr-container.hidden {
-    display: none !important;
-}
-
-#qrcode {
-    display: inline-block;
-    margin: 16px 0;
-}
-
-#qrcode img {
-    border-radius: 8px;
-}
-
-.hidden {
-    display: none !important;
+  container.innerHTML = records.map(r => {
+    let html = `
+      <div class="record-item">
+        <p><strong>${r.date}</strong> ${r.addedBy === 'doctor' ? '— ' + (r.doctorName || 'Doctor') : '(self)'}</p>
+        <p>${r.description}</p>
+        <p><strong>Diagnosis:</strong> ${r.diagnosis}</p>
+    `;
+    if (isDoctorView && r.prescription) {
+      html += `<p><strong>Prescription:</strong> ${r.prescription}</p>`;
+    }
+    html += '</div>';
+    return html;
+  }).join('');
 }
