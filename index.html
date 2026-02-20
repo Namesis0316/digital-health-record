@@ -1,402 +1,214 @@
-// ============================================
-// Kerala Migrant Worker Health Records - Logic
-// Hackathon Prototype: Digital Health Record for Migrant Workers
-// ============================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Health Record - Kerala Migrant Workers</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
 
-const STORAGE_PATIENTS = 'kerala_health_patients';
-const STORAGE_RECORDS = 'kerala_health_records';
-const CURRENT_PATIENT_ID = 'kerala_health_current_patient';
+<!-- Animated doctor background -->
+<div class="bg-doctors">
+    <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=1200" alt="" class="bg-doctors-img">
+    <div class="bg-doctors-overlay"></div>
+</div>
 
-// ----------- Page Navigation -----------
-function showPage(pageId) {
-  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-  const page = document.getElementById(pageId);
-  if (page) page.classList.remove('hidden');
+<div class="container">
 
-  if (pageId === 'patientDashboardPage') renderPatientDashboard();
-  if (pageId === 'doctorDashboardPage') loadDoctorPatientLive();
-}
-
-// Get stored data
-function getPatients() {
-  return JSON.parse(localStorage.getItem(STORAGE_PATIENTS) || '{}');
-}
-
-function getRecords() {
-  return JSON.parse(localStorage.getItem(STORAGE_RECORDS) || '{}');
-}
-
-function getCurrentPatientId() {
-  return localStorage.getItem(CURRENT_PATIENT_ID);
-}
-
-function setCurrentPatientId(id) {
-  localStorage.setItem(CURRENT_PATIENT_ID, id);
-}
-
-// Generate unique Health ID (KW + 6 digits)
-function generateHealthId() {
-  const patients = getPatients();
-  let id;
-  do {
-    id = 'KW' + String(Math.floor(100000 + Math.random() * 900000));
-  } while (patients[id]);
-  return id;
-}
-
-// ----------- Doctor Login -----------
-document.getElementById('doctorLoginForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  showPage('doctorDashboardPage');
-});
-
-// ----------- Patient Login -----------
-document.getElementById('patientLoginForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-  const healthId = document.getElementById('loginHealthId').value.trim().toUpperCase();
-  const phoneSuffix = document.getElementById('loginPhone').value.trim();
-  const patients = getPatients();
-  const patient = patients[healthId];
-  if (!patient) {
-    alert('Health ID not found. Please register first.');
-    return;
-  }
-  if (!patient.phone.endsWith(phoneSuffix)) {
-    alert('Invalid credentials.');
-    return;
-  }
-  setCurrentPatientId(healthId);
-  showPage('patientDashboardPage');
-});
-
-// ----------- Registration -----------
-document.getElementById('registrationForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const name = document.getElementById('name').value.trim();
-  const age = document.getElementById('age').value;
-  const bloodGroup = document.getElementById('bloodGroup').value;
-  const phone = document.getElementById('phone').value.trim();
-  const language = document.getElementById('language').value;
-
-  const patientId = generateHealthId();
-  const patients = getPatients();
-  patients[patientId] = {
-    name,
-    age: parseInt(age),
-    bloodGroup,
-    phone,
-    language,
-    registeredAt: new Date().toISOString()
-  };
-  localStorage.setItem(STORAGE_PATIENTS, JSON.stringify(patients));
-
-  const records = getRecords();
-  records[patientId] = records[patientId] || [];
-  localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
-
-  setCurrentPatientId(patientId);
-
-  const qrContainer = document.getElementById('qrContainer');
-  const qrcodeEl = document.getElementById('qrcode');
-  qrcodeEl.innerHTML = '';
-
-  if (typeof QRCode !== 'undefined') {
-    try {
-      new QRCode(qrcodeEl, { text: patientId, width: 200, height: 200 });
-    } catch (err) {
-      qrcodeEl.innerHTML = `<p style="font-size:24px; font-weight:bold;">${patientId}</p>`;
-    }
-  } else {
-    qrcodeEl.innerHTML = `<p style="font-size:24px; font-weight:bold;">${patientId}</p>`;
-  }
-
-  document.querySelector('#qrContainer h3').textContent = `Your Health ID: ${patientId}`;
-  qrContainer.classList.remove('hidden');
-  document.querySelector('form#registrationForm').classList.add('hidden');
-});
-
-// Go to Dashboard (after registration)
-document.getElementById('goToDashboard').addEventListener('click', function () {
-  showPage('patientDashboardPage');
-});
-
-// ----------- Demo Modals (screenshot-style overlays) -----------
-const DEMO_CONTENT = {
-  doctor: {
-    viewData: {
-      title: 'View Patient Data',
-      html: `
-        <div class="demo-screenshot">
-          <div class="demo-screen-header">Patient Health Profile</div>
-          <div class="demo-screen-body">
-            <p><strong>Health ID:</strong> KW123456</p>
-            <p><strong>Name:</strong> Rajesh Kumar</p>
-            <p><strong>Age:</strong> 32 | <strong>Blood:</strong> O+</p>
-            <p><strong>Language:</strong> Hindi</p>
-            <hr>
-            <p><strong>Recent Records:</strong></p>
-            <ul><li>2025-02-15: Fever, prescribed Paracetamol</li>
-            <li>2025-01-20: Follow-up checkup</li></ul>
-          </div>
-        </div>`,
-      caption: 'Doctor views patient demographics and full medical history'
-    },
-    uploadData: {
-      title: 'Upload Medical Record',
-      html: `
-        <div class="demo-screenshot">
-          <div class="demo-screen-header">Add Medical Record</div>
-          <div class="demo-screen-body">
-            <p>Patient ID: KW123456</p>
-            <p>Date: 2025-02-20</p>
-            <p>Notes: [Visit notes...]</p>
-            <p>Diagnosis: [Diagnosis...]</p>
-            <p>Prescription: [Medication...]</p>
-            <p><button class="btn">Save Record</button></p>
-          </div>
-        </div>`,
-      caption: 'Doctor uploads visit notes, diagnosis, and prescription'
-    },
-    searchPatient: {
-      title: 'Search Patient',
-      html: `
-        <div class="demo-screenshot">
-          <div class="demo-screen-header">Search by Health ID / QR</div>
-          <div class="demo-screen-body">
-            <p>Enter Health ID: [KW______]</p>
-            <p>Or scan QR code from patient's phone/card</p>
-            <button class="btn">Search</button>
-          </div>
-        </div>`,
-      caption: 'Search patient by Health ID or scan their QR code'
-    },
-    prescribe: {
-      title: 'Prescribe Medication',
-      html: `
-        <div class="demo-screenshot">
-          <div class="demo-screen-header">Prescription</div>
-          <div class="demo-screen-body">
-            <p>Paracetamol 500mg - 1-0-1 for 5 days</p>
-            <p>ORS sachets - as needed</p>
-            <p>Advice: Rest, fluids</p>
-          </div>
-        </div>`,
-      caption: 'Doctor writes prescription linked to patient record'
-    }
-  },
-  patient: {
-    viewData: {
-      title: 'View My Data',
-      html: `
-        <div class="demo-screenshot">
-          <div class="demo-screen-header">My Health Records</div>
-          <div class="demo-screen-body">
-            <p><strong>Health ID:</strong> KW123456</p>
-            <p>Your records are accessible in your preferred language.</p>
-            <p><strong>Recent:</strong></p>
-            <ul><li>2025-02-15: Fever - Paracetamol</li></ul>
-          </div>
-        </div>`,
-      caption: 'Patient views their own health records anytime'
-    },
-    uploadData: {
-      title: 'Upload Document',
-      html: `
-        <div class="demo-screenshot">
-          <div class="demo-screen-header">Upload Document</div>
-          <div class="demo-screen-body">
-            <p>Upload: Lab report / Prescription / X-ray</p>
-            <p>[Choose file] [Upload]</p>
-          </div>
-        </div>`,
-      caption: 'Patient uploads lab reports or prescriptions'
-    }
-  }
-};
-
-function showDemoModal(role, operation) {
-  const data = DEMO_CONTENT[role]?.[operation];
-  if (!data) return;
-  const modal = document.getElementById('demoModal');
-  document.getElementById('demoModalBody').innerHTML = data.html;
-  document.getElementById('demoModalCaption').textContent = data.caption;
-  modal.classList.remove('hidden');
-}
-
-function closeDemoModal() {
-  document.getElementById('demoModal').classList.add('hidden');
-}
-
-document.getElementById('demoModal').addEventListener('click', function (e) {
-  if (e.target === this) closeDemoModal();
-});
-
-// ----------- Patient Dashboard -----------
-function renderPatientDashboard() {
-  const patientInfoEl = document.getElementById('patientInfo');
-  const patientRecordsEl = document.getElementById('patientRecords');
-  if (!patientInfoEl) return;
-
-  const patientId = getCurrentPatientId();
-  if (!patientId) {
-    patientInfoEl.innerHTML = '<p>No patient logged in. Please register or login.</p>';
-    if (patientRecordsEl) patientRecordsEl.innerHTML = '';
-    return;
-  }
-
-  const patients = getPatients();
-  const patient = patients[patientId];
-  if (!patient) {
-    patientInfoEl.innerHTML = '<p>Patient data not found.</p>';
-    return;
-  }
-
-  patientInfoEl.innerHTML = `
-    <div class="info-box">
-      <p><strong>Health ID:</strong> ${patientId}</p>
-      <p><strong>Name:</strong> ${patient.name}</p>
-      <p><strong>Age:</strong> ${patient.age} | <strong>Blood Group:</strong> ${patient.bloodGroup}</p>
-      <p><strong>Phone:</strong> ${patient.phone}</p>
+    <!-- ========== 1. LANDING PAGE (First) ========== -->
+    <div id="landingPage" class="page">
+        <div class="landing-card">
+            <h1>🏥 Digital Health Record System</h1>
+            <h2>for Migrant Workers of Kerala</h2>
+            <p class="problem-statement">
+                A centralized digital system to manage health records of migrant workers in Kerala—
+                enabling secure access for both doctors and patients across language barriers.
+            </p>
+            <div class="landing-buttons">
+                <button class="landing-btn doctor-btn" onclick="showPage('doctorLoginPage')">
+                    👨‍⚕️ Doctor Login
+                </button>
+                <button class="landing-btn patient-btn" onclick="showPage('patientGatePage')">
+                    👤 Patient Register / Login
+                </button>
+            </div>
+        </div>
     </div>
-  `;
 
-  if (patientRecordsEl) renderRecordsList(patientRecordsEl, patientId);
-}
-
-function addPatientRecord() {
-  const patientId = getCurrentPatientId();
-  if (!patientId) {
-    alert('Please register or login first.');
-    return;
-  }
-
-  const date = prompt('Date of visit (YYYY-MM-DD):', new Date().toISOString().slice(0, 10));
-  if (!date) return;
-  const description = prompt('Brief description of the visit:') || 'N/A';
-  const diagnosis = prompt('Diagnosis (if any):') || 'N/A';
-
-  const records = getRecords();
-  records[patientId] = records[patientId] || [];
-  records[patientId].unshift({
-    date,
-    description,
-    diagnosis,
-    addedBy: 'self',
-    addedAt: new Date().toISOString()
-  });
-  localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
-
-  renderPatientDashboard();
-}
-
-// ----------- Doctor Dashboard (Live) -----------
-function loadDoctorPatientLive() {
-  const el = document.getElementById('doctorPatientSearch');
-  const patientId = (el && el.value.trim().toUpperCase()) || '';
-
-  const infoEl = document.getElementById('doctorPatientInfo');
-  const recordsEl = document.getElementById('doctorRecords');
-  if (!infoEl) return;
-
-  if (!patientId) {
-    infoEl.innerHTML = '<p>Enter a Patient ID and click Search.</p>';
-    if (recordsEl) recordsEl.innerHTML = '';
-    return;
-  }
-
-  const patients = getPatients();
-  const patient = patients[patientId];
-
-  if (!patient) {
-    infoEl.innerHTML = `<p>No patient found with ID: ${patientId}</p>`;
-    if (recordsEl) recordsEl.innerHTML = '';
-    return;
-  }
-
-  infoEl.innerHTML = `
-    <div class="info-box">
-      <p><strong>Health ID:</strong> ${patientId}</p>
-      <p><strong>Name:</strong> ${patient.name}</p>
-      <p><strong>Age:</strong> ${patient.age} | <strong>Blood Group:</strong> ${patient.bloodGroup}</p>
-      <p><strong>Phone:</strong> ${patient.phone}</p>
+    <!-- ========== 2. DOCTOR LOGIN PAGE ========== -->
+    <div id="doctorLoginPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('landingPage')">← Back</button>
+        <div class="card">
+            <h2>👨‍⚕️ Doctor Login</h2>
+            <form id="doctorLoginForm">
+                <div class="form-group">
+                    <label>Doctor ID / Email *</label>
+                    <input type="text" id="doctorEmail" placeholder="doc@hospital.gov.in" required>
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" id="doctorPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
     </div>
-  `;
 
-  if (recordsEl) renderRecordsList(recordsEl, patientId, true);
-}
+    <!-- ========== 3. DOCTOR DASHBOARD (with demo elements + live tools) ========== -->
+    <div id="doctorDashboardPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('landingPage')">← Back</button>
+        <div class="card">
+            <h2>Doctor Dashboard</h2>
+            <p class="demo-hint">Click each card to see operation demo • Use live tools below to search & add records</p>
+            <div class="demo-grid">
+                <button class="demo-card" onclick="showDemoModal('doctor', 'viewData')">
+                    <span class="demo-icon">📋</span>
+                    <span>View Patient Data</span>
+                </button>
+                <button class="demo-card" onclick="showDemoModal('doctor', 'uploadData')">
+                    <span class="demo-icon">📤</span>
+                    <span>Upload Medical Record</span>
+                </button>
+                <button class="demo-card" onclick="showDemoModal('doctor', 'searchPatient')">
+                    <span class="demo-icon">🔍</span>
+                    <span>Search Patient</span>
+                </button>
+                <button class="demo-card" onclick="showDemoModal('doctor', 'prescribe')">
+                    <span class="demo-icon">💊</span>
+                    <span>Prescribe Medication</span>
+                </button>
+            </div>
+            <hr class="demo-divider">
+            <h4>Live: Search & Manage Records</h4>
+            <div class="form-group">
+                <label>Enter Patient ID</label>
+                <input type="text" id="doctorPatientSearch" placeholder="KW123456">
+            </div>
+            <button class="btn btn-sm" onclick="loadDoctorPatientLive()">Search</button>
+            <div id="doctorPatientInfo" class="info-box-wrap"></div>
+            <div id="doctorRecords" class="records-list"></div>
+            <button class="btn" onclick="addDoctorRecordLive()">Add Medical Record</button>
+        </div>
+    </div>
 
-function addDoctorRecordLive() {
-  const el = document.getElementById('doctorPatientSearch');
-  const patientId = el ? el.value.trim().toUpperCase() : '';
+    <!-- ========== 4. PATIENT GATE (Register or Login) ========== -->
+    <div id="patientGatePage" class="page hidden">
+        <button class="back-btn" onclick="showPage('landingPage')">← Back</button>
+        <div class="card">
+            <h2>👤 Patient</h2>
+            <div class="gate-buttons">
+                <button class="btn btn-register" onclick="showPage('registrationPage')">Register</button>
+                <button class="btn btn-login" onclick="showPage('patientLoginPage')">Login</button>
+            </div>
+        </div>
+    </div>
 
-  if (!patientId) {
-    alert('Enter Patient ID and Search first.');
-    return;
-  }
+    <!-- ========== 5. PATIENT LOGIN PAGE ========== -->
+    <div id="patientLoginPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('patientGatePage')">← Back</button>
+        <div class="card">
+            <h2>Patient Login</h2>
+            <form id="patientLoginForm">
+                <div class="form-group">
+                    <label>Health ID *</label>
+                    <input type="text" id="loginHealthId" placeholder="KW123456" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone (last 4 digits) *</label>
+                    <input type="tel" id="loginPhone" placeholder="5678" pattern="[0-9]{4}" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+    </div>
 
-  const patients = getPatients();
-  if (!patients[patientId]) {
-    alert('Patient not found. Please search for a valid Patient ID.');
-    return;
-  }
+    <!-- ========== 6. PATIENT REGISTRATION (existing) ========== -->
+    <div id="registrationPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('patientGatePage')">← Back</button>
+        <div class="card">
+            <h2>DIGITAL HEALTH REGISTRATION</h2>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Age *</label>
+                    <input type="number" id="age" min="18" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Blood Group *</label>
+                    <select id="bloodGroup" required>
+                        <option value="">Select</option>
+                        <option>A+</option><option>A-</option>
+                        <option>B+</option><option>B-</option>
+                        <option>AB+</option><option>AB-</option>
+                        <option>O+</option><option>O-</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" id="phone" pattern="[0-9]{10}" required>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Language *</label>
+                    <select id="language" required>
+                        <option value="">Select</option>
+                        <option>Malayalam</option>
+                        <option>Hindi</option>
+                        <option>Tamil</option>
+                        <option>Telugu</option>
+                        <option>Bengali</option>
+                        <option>Kannada</option>
+                        <option>Odia</option>
+                        <option>English</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Register & Generate QR</button>
+            </form>
+            <div id="qrContainer" class="qr-container hidden">
+                <h3>Your Health ID QR Code</h3>
+                <div id="qrcode"></div>
+                <button id="goToDashboard" class="btn btn-success">Go to Dashboard</button>
+            </div>
+        </div>
+    </div>
 
-  const date = prompt('Date of visit (YYYY-MM-DD):', new Date().toISOString().slice(0, 10));
-  if (!date) return;
-  const description = prompt('Visit notes / symptoms:') || 'N/A';
-  const diagnosis = prompt('Diagnosis:') || 'N/A';
-  const prescription = prompt('Prescription / medication:') || 'N/A';
-  const doctorName = prompt('Doctor name:') || 'Doctor';
+    <!-- ========== 7. PATIENT DASHBOARD (with demo elements) ========== -->
+    <div id="patientDashboardPage" class="page hidden">
+        <button class="back-btn" onclick="showPage('patientGatePage')">← Back</button>
+        <div class="card">
+            <h3>My Health Records</h3>
+            <p class="demo-hint">Click each element to see the operation demo</p>
+            <div id="patientInfo"></div>
+            <div id="patientRecords" class="records-list"></div>
+            <div class="demo-grid">
+                <button class="demo-card" onclick="showDemoModal('patient', 'viewData')">
+                    <span class="demo-icon">📋</span>
+                    <span>View My Data</span>
+                </button>
+                <button class="demo-card" onclick="showDemoModal('patient', 'uploadData')">
+                    <span class="demo-icon">📤</span>
+                    <span>Upload Document</span>
+                </button>
+                <button class="btn btn-secondary" onclick="addPatientRecord()">Add Health Record</button>
+            </div>
+        </div>
+    </div>
 
-  const records = getRecords();
-  records[patientId] = records[patientId] || [];
-  records[patientId].unshift({
-    date,
-    description,
-    diagnosis,
-    prescription,
-    doctorName,
-    addedBy: 'doctor',
-    addedAt: new Date().toISOString()
-  });
-  localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
+</div>
 
-  loadDoctorPatientLive();
-}
+<!-- ========== DEMO MODAL (screenshot-style overlay) ========== -->
+<div id="demoModal" class="demo-modal hidden">
+    <div class="demo-modal-content">
+        <button class="demo-close" onclick="closeDemoModal()">×</button>
+        <div id="demoModalBody"></div>
+        <p class="demo-caption" id="demoModalCaption">Operation demo</p>
+    </div>
+</div>
 
-document.addEventListener('DOMContentLoaded', function () {
-  const searchEl = document.getElementById('doctorPatientSearch');
-  if (searchEl) {
-    searchEl.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        loadDoctorPatientLive();
-      }
-    });
-  }
-});
-
-// ----------- Render Records List -----------
-function renderRecordsList(container, patientId, isDoctorView = false) {
-  if (!container) return;
-  const records = getRecords()[patientId] || [];
-
-  if (records.length === 0) {
-    container.innerHTML = '<p>No health records yet.</p>';
-    return;
-  }
-
-  container.innerHTML = records.map(r => {
-    let html = `
-      <div class="record-item">
-        <p><strong>${r.date}</strong> ${r.addedBy === 'doctor' ? '— ' + (r.doctorName || 'Doctor') : '(self)'}</p>
-        <p>${r.description}</p>
-        <p><strong>Diagnosis:</strong> ${r.diagnosis}</p>
-    `;
-    if (isDoctorView && r.prescription) {
-      html += `<p><strong>Prescription:</strong> ${r.prescription}</p>`;
-    }
-    html += '</div>';
-    return html;
-  }).join('');
-}
+<script src="script.js"></script>
+</body>
+</html>
