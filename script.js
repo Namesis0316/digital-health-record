@@ -5,7 +5,20 @@
 
 const STORAGE_PATIENTS = 'kerala_health_patients';
 const STORAGE_RECORDS = 'kerala_health_records';
+const STORAGE_APPOINTMENTS = 'kerala_health_appointments';
 const CURRENT_PATIENT_ID = 'kerala_health_current_patient';
+
+// Doctors list - names and specializations
+const DOCTORS_LIST = [
+  { name: 'Dr. Rajesh Kumar', spec: 'General Physician', contact: 'Reg. No: MCI-4521' },
+  { name: 'Dr. Priya Menon', spec: 'Pediatrics', contact: 'Reg. No: MCI-5623' },
+  { name: 'Dr. Suresh Nair', spec: 'Orthopedics', contact: 'Reg. No: MCI-2847' },
+  { name: 'Dr. Anitha Krishnan', spec: 'Dermatology', contact: 'Reg. No: MCI-3912' },
+  { name: 'Dr. Mohammed Ali', spec: 'Cardiology', contact: 'Reg. No: MCI-6745' },
+  { name: 'Dr. Lakshmi Devi', spec: 'Gynecology', contact: 'Reg. No: MCI-1829' },
+  { name: 'Dr. Arun Thomas', spec: 'ENT Specialist', contact: 'Reg. No: MCI-4956' },
+  { name: 'Dr. Meera Pillai', spec: 'Psychiatry', contact: 'Reg. No: MCI-7134' },
+];
 
 // ----------- Page Navigation -----------
 function showPage(pageId) {
@@ -14,7 +27,11 @@ function showPage(pageId) {
   if (page) page.classList.remove('hidden');
 
   if (pageId === 'patientDashboardPage') renderPatientDashboard();
-  if (pageId === 'doctorDashboardPage') loadDoctorPatientLive();
+  if (pageId === 'doctorDashboardPage') {
+    loadDoctorPatientLive();
+    renderDoctorsList('doctorsList');
+    renderDoctorAppointments();
+  }
 }
 
 // Get stored data
@@ -24,6 +41,14 @@ function getPatients() {
 
 function getRecords() {
   return JSON.parse(localStorage.getItem(STORAGE_RECORDS) || '{}');
+}
+
+function getAppointments() {
+  return JSON.parse(localStorage.getItem(STORAGE_APPOINTMENTS) || '[]');
+}
+
+function setAppointments(list) {
+  localStorage.setItem(STORAGE_APPOINTMENTS, JSON.stringify(list));
 }
 
 function getCurrentPatientId() {
@@ -54,14 +79,14 @@ document.getElementById('doctorLoginForm').addEventListener('submit', function (
 document.getElementById('patientLoginForm').addEventListener('submit', function (e) {
   e.preventDefault();
   const healthId = document.getElementById('loginHealthId').value.trim().toUpperCase();
-  const phoneSuffix = document.getElementById('loginPhone').value.trim();
+  const password = document.getElementById('loginPassword').value;
   const patients = getPatients();
   const patient = patients[healthId];
   if (!patient) {
     alert('Health ID not found. Please register first.');
     return;
   }
-  if (!patient.phone.endsWith(phoneSuffix)) {
+  if (patient.password !== password) {
     alert('Invalid credentials.');
     return;
   }
@@ -77,6 +102,7 @@ document.getElementById('registrationForm').addEventListener('submit', function 
   const age = document.getElementById('age').value;
   const bloodGroup = document.getElementById('bloodGroup').value;
   const phone = document.getElementById('phone').value.trim();
+  const password = document.getElementById('password').value;
   const language = document.getElementById('language').value;
 
   const patientId = generateHealthId();
@@ -86,6 +112,7 @@ document.getElementById('registrationForm').addEventListener('submit', function 
     age: parseInt(age),
     bloodGroup,
     phone,
+    password,
     language,
     registeredAt: new Date().toISOString()
   };
@@ -262,6 +289,8 @@ function renderPatientDashboard() {
   `;
 
   if (patientRecordsEl) renderRecordsList(patientRecordsEl, patientId);
+  renderPatientAppointments();
+  renderDoctorsList('patientDoctorsList', true);
 }
 
 function addPatientRecord() {
@@ -374,6 +403,126 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+});
+
+// ----------- Render Doctors List -----------
+function renderDoctorsList(containerId, showBookButton = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = DOCTORS_LIST.map((d, i) => `
+    <div class="doctor-card">
+      <div class="doctor-card-icon"><i class="fa-solid fa-user-doctor"></i></div>
+      <div class="doctor-card-name">${d.name}</div>
+      <div class="doctor-card-spec">${d.spec}</div>
+      <div class="doctor-card-contact">${d.contact}</div>
+      ${showBookButton ? `<button type="button" class="btn btn-appointment" onclick="openAppointmentModal(${i})"><i class="fa-solid fa-calendar-plus"></i> Book Appointment</button>` : ''}
+    </div>
+  `).join('');
+}
+
+// ----------- Appointment Modal -----------
+function openAppointmentModal(doctorIndex) {
+  const d = DOCTORS_LIST[doctorIndex];
+  if (!d) return;
+  document.getElementById('appointmentDoctorName').value = d.name;
+  document.getElementById('appointmentDoctorSpec').value = d.spec;
+  document.getElementById('appointmentDoctorDisplay').textContent = `${d.name} — ${d.spec}`;
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('appointmentDate').value = today;
+  document.getElementById('appointmentTime').value = '';
+  document.getElementById('appointmentReason').value = '';
+  document.getElementById('appointmentModal').classList.remove('hidden');
+}
+
+function closeAppointmentModal() {
+  document.getElementById('appointmentModal').classList.add('hidden');
+}
+
+function submitAppointment(e) {
+  e.preventDefault();
+  const patientId = getCurrentPatientId();
+  if (!patientId) {
+    alert('Please log in first.');
+    return;
+  }
+  const doctorName = document.getElementById('appointmentDoctorName').value;
+  const doctorSpec = document.getElementById('appointmentDoctorSpec').value;
+  const date = document.getElementById('appointmentDate').value;
+  const time = document.getElementById('appointmentTime').value;
+  const reason = document.getElementById('appointmentReason').value.trim() || 'General checkup';
+
+  const appointments = getAppointments();
+  appointments.push({
+    patientId,
+    doctorName,
+    doctorSpec,
+    date,
+    time,
+    reason,
+    status: 'Requested',
+    createdAt: new Date().toISOString()
+  });
+  setAppointments(appointments);
+
+  closeAppointmentModal();
+  renderPatientDashboard();
+  alert('Appointment request submitted successfully.');
+}
+
+function renderPatientAppointments() {
+  const container = document.getElementById('patientAppointmentsList');
+  if (!container) return;
+  const patientId = getCurrentPatientId();
+  if (!patientId) {
+    container.innerHTML = '<p>Log in to see your appointments.</p>';
+    return;
+  }
+  const appointments = getAppointments().filter(a => a.patientId === patientId);
+  if (appointments.length === 0) {
+    container.innerHTML = '<p>No appointments yet. Book one with a doctor below.</p>';
+    return;
+  }
+  container.innerHTML = appointments.map(a => `
+    <div class="appointment-item">
+      <p><strong>${a.date}</strong> ${a.time || ''} — ${a.doctorName} (${a.doctorSpec})</p>
+      <p>${a.reason} · <span class="appointment-status">${a.status}</span></p>
+    </div>
+  `).join('');
+}
+
+// ----------- Doctor: View all appointments -----------
+function renderDoctorAppointments() {
+  const container = document.getElementById('doctorAppointmentsList');
+  if (!container) return;
+  const appointments = getAppointments();
+  const patients = getPatients();
+
+  if (appointments.length === 0) {
+    container.innerHTML = '<p>No appointment requests yet.</p>';
+    return;
+  }
+
+  const sorted = [...appointments].sort((a, b) => {
+    const d = a.date.localeCompare(b.date);
+    return d !== 0 ? d : (a.time || '').localeCompare(b.time || '');
+  });
+
+  container.innerHTML = sorted.map(a => {
+    const patient = patients[a.patientId];
+    const patientName = patient ? patient.name : a.patientId;
+    return `
+      <div class="appointment-item doctor-appointment-item">
+        <p><strong>${a.date}</strong> ${a.time || ''} · <span class="doctor-apt-doctor">${a.doctorName}</span> (${a.doctorSpec})</p>
+        <p><i class="fa-solid fa-user"></i> Patient: <strong>${patientName}</strong> <span class="doctor-apt-id">(${a.patientId})</span></p>
+        <p>${a.reason} · <span class="appointment-status">${a.status}</span></p>
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('appointmentModal').addEventListener('click', function (e) {
+  if (e.target === this) closeAppointmentModal();
 });
 
 // ----------- Render Records List -----------
