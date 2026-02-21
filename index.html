@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Health Record - Kerala Migrant Workers</title>
+    <title>SevaHealth - Kerala Migrant Workers</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
@@ -20,7 +21,7 @@
     <!-- ========== 1. LANDING PAGE (First) ========== -->
     <div id="landingPage" class="page">
         <div class="landing-card">
-            <h1>🏥 Digital Health Record System</h1>
+            <h1><i class="fa-solid fa-hospital"></i> SevaHealth</h1>
             <h2>for Migrant Workers of Kerala</h2>
             <p class="problem-statement">
                 A centralized digital system to manage health records of migrant workers in Kerala—
@@ -28,10 +29,10 @@
             </p>
             <div class="landing-buttons">
                 <button class="landing-btn doctor-btn" onclick="showPage('doctorLoginPage')">
-                    👨‍⚕️ Doctor Login
+                    <i class="fa-solid fa-user-doctor"></i> Doctor Login
                 </button>
                 <button class="landing-btn patient-btn" onclick="showPage('patientGatePage')">
-                    👤 Patient Register / Login
+                    <i class="fa-solid fa-user"></i> Patient Register / Login
                 </button>
             </div>
         </div>
@@ -39,9 +40,9 @@
 
     <!-- ========== 2. DOCTOR LOGIN PAGE ========== -->
     <div id="doctorLoginPage" class="page hidden">
-        <button class="back-btn" onclick="showPage('landingPage')">← Back</button>
+        <button class="back-btn" onclick="showPage('landingPage')"><i class="fa-solid fa-arrow-left"></i> Back</button>
         <div class="card">
-            <h2>👨‍⚕️ Doctor Login</h2>
+            <h2><i class="fa-solid fa-user-doctor"></i> Doctor Login</h2>
             <form id="doctorLoginForm">
                 <div class="form-group">
                     <label>Doctor ID / Email *</label>
@@ -58,46 +59,53 @@
 
     <!-- ========== 3. DOCTOR DASHBOARD (with demo elements + live tools) ========== -->
     <div id="doctorDashboardPage" class="page hidden">
-        <button class="back-btn" onclick="showPage('landingPage')">← Back</button>
+        <button class="back-btn" onclick="showPage('landingPage')"><i class="fa-solid fa-arrow-left"></i> Back</button>
         <div class="card">
-            <h2>Doctor Dashboard</h2>
+            <h2><i class="fa-solid fa-user-doctor"></i> Doctor Dashboard</h2>
             <p class="demo-hint">Click each card to see operation demo • Use live tools below to search & add records</p>
             <div class="demo-grid">
                 <button class="demo-card" onclick="showDemoModal('doctor', 'viewData')">
-                    <span class="demo-icon">📋</span>
+                    <span class="demo-icon"><i class="fa-solid fa-clipboard-list"></i></span>
                     <span>View Patient Data</span>
                 </button>
                 <button class="demo-card" onclick="showDemoModal('doctor', 'uploadData')">
-                    <span class="demo-icon">📤</span>
+                    <span class="demo-icon"><i class="fa-solid fa-file-upload"></i></span>
                     <span>Upload Medical Record</span>
                 </button>
                 <button class="demo-card" onclick="showDemoModal('doctor', 'searchPatient')">
-                    <span class="demo-icon">🔍</span>
+                    <span class="demo-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
                     <span>Search Patient</span>
                 </button>
                 <button class="demo-card" onclick="showDemoModal('doctor', 'prescribe')">
-                    <span class="demo-icon">💊</span>
+                    <span class="demo-icon"><i class="fa-solid fa-pills"></i></span>
                     <span>Prescribe Medication</span>
                 </button>
             </div>
+            <hr class="demo-divider">
+            <h4><i class="fa-solid fa-calendar-check"></i> Appointment Requests</h4>
+            <p class="demo-hint">All appointment requests from patients</p>
+            <div id="doctorAppointmentsList" class="doctor-appointments-list"></div>
             <hr class="demo-divider">
             <h4>Live: Search & Manage Records</h4>
             <div class="form-group">
                 <label>Enter Patient ID</label>
                 <input type="text" id="doctorPatientSearch" placeholder="KW123456">
             </div>
-            <button class="btn btn-sm" onclick="loadDoctorPatientLive()">Search</button>
+            <button class="btn btn-sm" onclick="loadDoctorPatientLive()"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
             <div id="doctorPatientInfo" class="info-box-wrap"></div>
             <div id="doctorRecords" class="records-list"></div>
-            <button class="btn" onclick="addDoctorRecordLive()">Add Medical Record</button>
+            <button class="btn" onclick="addDoctorRecordLive()"><i class="fa-solid fa-plus"></i> Add Medical Record</button>
+            <hr class="demo-divider">
+            <h4><i class="fa-solid fa-users-medical"></i> Our Doctors</h4>
+            <div id="doctorsList" class="doctors-list"></div>
         </div>
     </div>
 
     <!-- ========== 4. PATIENT GATE (Register or Login) ========== -->
     <div id="patientGatePage" class="page hidden">
-        <button class="back-btn" onclick="showPage('landingPage')">← Back</button>
+        <button class="back-btn" onclick="showPage('landingPage')"><i class="fa-solid fa-arrow-left"></i> Back</button>
         <div class="card">
-            <h2>👤 Patient</h2>
+            <h2><i class="fa-solid fa-user"></i> Patient</h2>
             <div class="gate-buttons">
                 <button class="btn btn-register" onclick="showPage('registrationPage')">Register</button>
                 <button class="btn btn-login" onclick="showPage('patientLoginPage')">Login</button>
@@ -107,7 +115,7 @@
 
     <!-- ========== 5. PATIENT LOGIN PAGE ========== -->
     <div id="patientLoginPage" class="page hidden">
-        <button class="back-btn" onclick="showPage('patientGatePage')">← Back</button>
+        <button class="back-btn" onclick="showPage('patientGatePage')"><i class="fa-solid fa-arrow-left"></i> Back</button>
         <div class="card">
             <h2>Patient Login</h2>
             <form id="patientLoginForm">
@@ -116,8 +124,8 @@
                     <input type="text" id="loginHealthId" placeholder="KW123456" required>
                 </div>
                 <div class="form-group">
-                    <label>Phone (last 4 digits) *</label>
-                    <input type="tel" id="loginPhone" placeholder="5678" pattern="[0-9]{4}" required>
+                    <label>Password *</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
                 </div>
                 <button type="submit" class="btn">Login</button>
             </form>
@@ -126,7 +134,7 @@
 
     <!-- ========== 6. PATIENT REGISTRATION (existing) ========== -->
     <div id="registrationPage" class="page hidden">
-        <button class="back-btn" onclick="showPage('patientGatePage')">← Back</button>
+        <button class="back-btn" onclick="showPage('patientGatePage')"><i class="fa-solid fa-arrow-left"></i> Back</button>
         <div class="card">
             <h2>DIGITAL HEALTH REGISTRATION</h2>
             <form id="registrationForm">
@@ -151,6 +159,10 @@
                 <div class="form-group">
                     <label>Phone *</label>
                     <input type="tel" id="phone" pattern="[0-9]{10}" required>
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" id="password" placeholder="Min 6 characters" minlength="6" required>
                 </div>
                 <div class="form-group">
                     <label>Preferred Language *</label>
@@ -178,26 +190,71 @@
 
     <!-- ========== 7. PATIENT DASHBOARD (with demo elements) ========== -->
     <div id="patientDashboardPage" class="page hidden">
-        <button class="back-btn" onclick="showPage('patientGatePage')">← Back</button>
+        <button class="back-btn" onclick="showPage('patientGatePage')"><i class="fa-solid fa-arrow-left"></i> Back</button>
         <div class="card">
-            <h3>My Health Records</h3>
+            <h3><i class="fa-solid fa-heart-pulse"></i> My Health Records</h3>
             <p class="demo-hint">Click each element to see the operation demo</p>
             <div id="patientInfo"></div>
             <div id="patientRecords" class="records-list"></div>
             <div class="demo-grid">
                 <button class="demo-card" onclick="showDemoModal('patient', 'viewData')">
-                    <span class="demo-icon">📋</span>
+                    <span class="demo-icon"><i class="fa-solid fa-clipboard-list"></i></span>
                     <span>View My Data</span>
                 </button>
                 <button class="demo-card" onclick="showDemoModal('patient', 'uploadData')">
-                    <span class="demo-icon">📤</span>
+                    <span class="demo-icon"><i class="fa-solid fa-file-upload"></i></span>
                     <span>Upload Document</span>
                 </button>
-                <button class="btn btn-secondary" onclick="addPatientRecord()">Add Health Record</button>
+                <button class="btn btn-secondary" onclick="addPatientRecord()"><i class="fa-solid fa-plus"></i> Add Health Record</button>
             </div>
+            <hr class="demo-divider">
+            <h4><i class="fa-solid fa-calendar-check"></i> Appointments</h4>
+            <p class="demo-hint">Your upcoming and past appointments</p>
+            <div id="patientAppointmentsList" class="appointments-list"></div>
+            <hr class="demo-divider">
+            <h4><i class="fa-solid fa-users-medical"></i> Available Doctors</h4>
+            <p class="demo-hint">View our panel of doctors and book an appointment</p>
+            <div id="patientDoctorsList" class="doctors-list"></div>
         </div>
     </div>
 
+</div>
+
+<!-- ========== APPOINTMENT MODAL ========== -->
+<div id="appointmentModal" class="appointment-modal hidden">
+    <div class="appointment-modal-content">
+        <button class="demo-close" onclick="closeAppointmentModal()">×</button>
+        <h3><i class="fa-solid fa-calendar-plus"></i> Book Appointment</h3>
+        <form id="appointmentForm" onsubmit="submitAppointment(event)">
+            <input type="hidden" id="appointmentDoctorName" value="">
+            <input type="hidden" id="appointmentDoctorSpec" value="">
+            <div class="form-group">
+                <label>Doctor</label>
+                <p id="appointmentDoctorDisplay" class="appointment-doctor-display"></p>
+            </div>
+            <div class="form-group">
+                <label>Preferred Date *</label>
+                <input type="date" id="appointmentDate" required>
+            </div>
+            <div class="form-group">
+                <label>Preferred Time *</label>
+                <select id="appointmentTime" required>
+                    <option value="">Select time</option>
+                    <option value="09:00">9:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="15:00">3:00 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Reason / Notes</label>
+                <textarea id="appointmentReason" rows="3" placeholder="Brief reason for visit (optional)"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Request Appointment</button>
+        </form>
+    </div>
 </div>
 
 <!-- ========== DEMO MODAL (screenshot-style overlay) ========== -->
