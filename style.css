@@ -1,9 +1,6 @@
 body {
     font-family: 'Segoe UI', system-ui, sans-serif;
     background: linear-gradient(135deg, #0f3460 0%, #16213e 50%, #1a1a2e 100%);
-    color: #333;body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: linear-gradient(135deg, #0f3460 0%, #16213e 50%, #1a1a2e 100%);
     color: #333;
     margin: 0;
     padding: 0;
@@ -25,14 +22,14 @@ body {
     width: 120%;
     height: 120%;
     object-fit: cover;
-    opacity: 0.35;
+    opacity: 0.6;
     animation: doctorFloat 20s ease-in-out infinite;
 }
 
 .bg-doctors-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(15,52,96,0.85) 0%, rgba(22,33,62,0.9) 50%, rgba(26,26,46,0.95) 100%);
+    background: linear-gradient(135deg, rgba(15,52,96,0.65) 0%, rgba(22,33,62,0.7) 50%, rgba(26,26,46,0.75) 100%);
     pointer-events: none;
 }
 
@@ -97,6 +94,12 @@ body {
     margin: 0 0 8px 0;
 }
 
+.landing-card h1 i {
+    margin-right: 12px;
+    color: #66bb6a;
+    text-shadow: 0 0 15px rgba(102, 187, 106, 0.5);
+}
+
 .landing-card h2 {
     font-size: 1.2rem;
     color: rgba(255,255,255,0.9);
@@ -123,31 +126,56 @@ body {
     padding: 18px 36px;
     font-size: 1.1rem;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.4);
+    border: 2px solid rgba(255,255,255,0.6);
     cursor: pointer;
     font-weight: 600;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.3s;
     min-width: 200px;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                0 0 20px rgba(25, 118, 210, 0.3),
                 inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .landing-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.3),
+                0 0 30px rgba(25, 118, 210, 0.5),
+                0 0 50px rgba(25, 118, 210, 0.3),
                 inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
 .doctor-btn {
     background: rgba(25, 118, 210, 0.5);
     color: white;
+    border-color: #42a5f5;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                0 0 20px rgba(66, 165, 245, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.doctor-btn:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3),
+                0 0 35px rgba(66, 165, 245, 0.6),
+                0 0 55px rgba(66, 165, 245, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
 .patient-btn {
     background: rgba(46, 125, 50, 0.5);
     color: white;
+    border-color: #66bb6a;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                0 0 20px rgba(102, 187, 106, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.patient-btn:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3),
+                0 0 35px rgba(102, 187, 106, 0.6),
+                0 0 55px rgba(102, 187, 106, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
 /* Back Button */
@@ -156,14 +184,18 @@ body {
     color: white;
     padding: 8px 16px;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.4);
+    border: 2px solid rgba(255,255,255,0.5);
     cursor: pointer;
     margin-bottom: 20px;
     font-size: 14px;
+    transition: all 0.3s;
+    box-shadow: 0 0 15px rgba(255,255,255,0.2);
 }
 
 .back-btn:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.35);
+    box-shadow: 0 0 25px rgba(255,255,255,0.4),
+                0 0 40px rgba(255,255,255,0.2);
 }
 
 /* Cards */
@@ -202,7 +234,7 @@ body {
 .demo-card {
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.35);
     border-radius: 12px;
     padding: 20px;
     cursor: pointer;
@@ -210,22 +242,27 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    transition: all 0.2s;
+    transition: all 0.3s;
     font-weight: 500;
     color: #fff;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                0 0 15px rgba(25, 118, 210, 0.25),
                 inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .demo-card:hover {
-    border-color: rgba(25, 118, 210, 0.6);
+    border-color: rgba(66, 165, 245, 0.8);
     background: rgba(25, 118, 210, 0.25);
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3),
+                0 0 30px rgba(66, 165, 245, 0.5),
+                0 0 45px rgba(66, 165, 245, 0.3);
 }
 
 .demo-icon {
     font-size: 2rem;
+    color: #66bb6a;
+    text-shadow: 0 0 10px rgba(102, 187, 106, 0.6);
 }
 
 .demo-divider {
@@ -245,29 +282,37 @@ body {
 .btn-register {
     background: rgba(46, 125, 50, 0.5);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 2px solid #66bb6a;
     color: white;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                0 0 20px rgba(102, 187, 106, 0.4),
                 inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .btn-register:hover {
     background: rgba(46, 125, 50, 0.65);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3),
+                0 0 30px rgba(102, 187, 106, 0.6),
+                0 0 50px rgba(102, 187, 106, 0.3);
 }
 
 .btn-login {
     background: rgba(25, 118, 210, 0.5);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 2px solid #42a5f5;
     color: white;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                0 0 20px rgba(66, 165, 245, 0.4),
                 inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .btn-login:hover {
     background: rgba(25, 118, 210, 0.65);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3),
+                0 0 30px rgba(66, 165, 245, 0.6),
+                0 0 50px rgba(66, 165, 245, 0.3);
 }
 
 /* Form */
@@ -318,35 +363,51 @@ button {
 .btn {
     background: rgba(25, 118, 210, 0.5);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 2px solid #42a5f5;
     color: white;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                0 0 18px rgba(66, 165, 245, 0.35),
                 inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .btn:hover {
     background: rgba(25, 118, 210, 0.7);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3),
+                0 0 25px rgba(66, 165, 245, 0.5),
+                0 0 40px rgba(66, 165, 245, 0.3);
 }
 
 .btn-secondary {
     background: rgba(92, 107, 192, 0.5);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 2px solid #7986cb;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                0 0 18px rgba(121, 134, 203, 0.35),
+                inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .btn-secondary:hover {
     background: rgba(63, 81, 181, 0.6);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3),
+                0 0 25px rgba(121, 134, 203, 0.5),
+                0 0 40px rgba(121, 134, 203, 0.3);
 }
 
 .btn-success {
     background: rgba(46, 125, 50, 0.5);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 2px solid #66bb6a;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2),
+                0 0 18px rgba(102, 187, 106, 0.35),
+                inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .btn-success:hover {
     background: rgba(27, 94, 32, 0.7);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3),
+                0 0 25px rgba(102, 187, 106, 0.5),
+                0 0 40px rgba(102, 187, 106, 0.3);
 }
 
 .btn-sm {
@@ -497,260 +558,8 @@ button {
     display: none !important;
 }
 
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-}
-
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 30px 20px;
-}
-
-/* Pages */
-.page {
-    animation: fadeIn 0.3s ease;
-}
-
-.page.hidden {
-    display: none !important;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Landing Page */
-.landing-card {
-    background: white;
-    padding: 48px 40px;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    text-align: center;
-}
-
-.proto-badge {
-    display: inline-block;
-    background: #ff6b35;
-    color: white;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 24px;
-}
-
-.landing-card h1 {
-    font-size: 2rem;
-    color: #0f3460;
-    margin: 0 0 8px 0;
-}
-
-.landing-card h2 {
-    font-size: 1.2rem;
-    color: #666;
-    font-weight: 500;
-    margin: 0 0 24px 0;
-}
-
-.problem-statement {
-    max-width: 560px;
-    margin: 0 auto 36px;
-    line-height: 1.6;
-    color: #555;
-    font-size: 1rem;
-}
-
-.landing-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.landing-btn {
-    padding: 18px 36px;
-    font-size: 1.1rem;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: transform 0.2s, box-shadow 0.2s;
-    min-width: 200px;
-}
-
-.landing-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-}
-
-.doctor-btn {
-    background: #1976d2;
-    color: white;
-}
-
-.patient-btn {
-    background: #2e7d32;
-    color: white;
-}
-
-/* Back Button */
-.back-btn {
-    background: rgba(255,255,255,0.2);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.4);
-    cursor: pointer;
-    margin-bottom: 20px;
-    font-size: 14px;
-}
-
-.back-btn:hover {
-    background: rgba(255,255,255,0.3);
-}
-
-/* Cards */
-.card {
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    margin-bottom: 20px;
-}
-
-.card h2, .card h3, .card h4 {
-    margin-top: 0;
-    color: #0f3460;
-}
-
-/* Demo elements */
-.demo-hint {
-    font-size: 13px;
-    color: #666;
-    margin-bottom: 20px;
-}
-
-.demo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
-    margin: 20px 0;
-}
-
-.demo-card {
-    background: #f8f9fa;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 20px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.2s;
-    font-weight: 500;
-}
-
-.demo-card:hover {
-    border-color: #1976d2;
-    background: #e3f2fd;
-    transform: translateY(-2px);
-}
-
-.demo-icon {
-    font-size: 2rem;
-}
-
-.demo-divider {
-    border: none;
-    border-top: 2px solid #eee;
-    margin: 28px 0;
-}
-
-/* Gate (Register / Login choice) */
-.gate-buttons {
-    display: flex;
-    gap: 16px;
-    justify-content: center;
-    margin-top: 24px;
-}
-
-.btn-register {
-    background: #2e7d32;
-    color: white;
-}
-
-.btn-login {
-    background: #1976d2;
-    color: white;
-}
-
-/* Form */
-.form-group {
-    margin-bottom: 18px;
-}
-
-.form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: #444;
-}
-
-input, select {
-    width: 100%;
-    max-width: 400px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 15px;
-}
-
-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn {
-    background: #1976d2;
-    color: white;
-}
-
-.btn:hover {
-    background: #125ea7;
-}
-
-.btn-secondary {
-    background: #5c6bc0;
-}
-
-.btn-secondary:hover {
-    background: #3f51b5;
-}
-
-.btn-success {
-    background: #2e7d32;
-}
-
-.btn-success:hover {
-    background: #1b5e20;
-}
-
-.btn-sm {
-    padding: 8px 16px;
-    font-size: 14px;
-    margin-left: 8px;
-}
-
-/* Demo Modal (screenshot overlay) */
-.demo-modal {
+/* Appointment modal */
+.appointment-modal {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.7);
@@ -761,125 +570,98 @@ button {
     padding: 20px;
 }
 
-.demo-modal.hidden {
+.appointment-modal.hidden {
     display: none !important;
 }
 
-.demo-modal-content {
-    background: white;
+.appointment-modal-content {
+    background: rgba(22, 33, 62, 0.98);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(66, 165, 245, 0.4);
     border-radius: 12px;
-    max-width: 500px;
+    padding: 28px;
+    max-width: 420px;
     width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 24px 48px rgba(0,0,0,0.4);
+    box-shadow: 0 24px 48px rgba(0,0,0,0.4),
+                0 0 30px rgba(66, 165, 245, 0.2);
 }
 
-.demo-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: none;
-    background: #e0e0e0;
-    font-size: 24px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 0;
+.appointment-modal-content h3 {
+    margin-top: 0;
+    color: #fff;
+    margin-bottom: 20px;
 }
 
-.demo-close:hover {
-    background: #bdbdbd;
+.appointment-modal-content h3 i {
+    margin-right: 8px;
+    color: #66bb6a;
 }
 
-.demo-screenshot {
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    margin: 40px 24px 12px;
-    overflow: hidden;
-}
-
-.demo-screen-header {
-    background: #1976d2;
-    color: white;
-    padding: 12px 16px;
+.appointment-doctor-display {
+    color: rgba(255,255,255,0.95);
     font-weight: 600;
-}
-
-.demo-screen-body {
-    padding: 20px;
-    background: #fafafa;
-}
-
-.demo-screen-body p, .demo-screen-body ul {
-    margin: 8px 0;
-}
-
-.demo-caption {
-    font-size: 13px;
-    color: #666;
-    padding: 12px 24px 24px;
-    margin: 0;
-}
-
-/* Info box */
-.info-box {
-    background: #f5f5f5;
-    border-left: 4px solid #1976d2;
-    padding: 16px;
-    border-radius: 0 8px 8px 0;
-    margin: 16px 0;
-}
-
-.info-box p {
-    margin: 6px 0;
-}
-
-.info-box-wrap {
-    margin: 16px 0;
-}
-
-/* Records list */
-.records-list {
-    margin: 20px 0;
-}
-
-.record-item {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
+    margin: 8px 0 0 0;
+    padding: 10px;
+    background: rgba(255,255,255,0.08);
     border-radius: 8px;
+}
+
+.appointment-modal-content textarea {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    font-size: 15px;
+    color: #fff;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.appointment-modal-content textarea::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+.btn-appointment {
+    margin-top: 12px;
+    width: 100%;
+}
+
+/* Appointments list */
+.appointments-list {
+    margin: 16px 0;
+}
+
+.appointment-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
     padding: 14px;
     margin-bottom: 12px;
+    box-shadow: 0 0 15px rgba(66, 165, 245, 0.1);
 }
 
-.record-item p {
+.appointment-item p {
     margin: 6px 0;
+    color: rgba(255,255,255,0.95);
 }
 
-/* QR Container */
-.qr-container {
-    text-align: center;
-    padding: 24px;
-    margin-top: 20px;
+.appointment-status {
+    color: #66bb6a;
+    font-size: 0.9rem;
 }
 
-.qr-container.hidden {
-    display: none !important;
-}
-
-#qrcode {
-    display: inline-block;
+/* Doctor dashboard appointments */
+.doctor-appointments-list {
     margin: 16px 0;
 }
 
-#qrcode img {
-    border-radius: 8px;
+.doctor-appointment-item .doctor-apt-doctor {
+    color: #42a5f5;
 }
 
-.hidden {
-    display: none !important;
+.doctor-appointment-item .doctor-apt-id {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
 }
-
